@@ -56,6 +56,18 @@ module Fog
           @firewall_acls ||= collection_based_on_type("application/vnd.tmrk.ecloud.firewallAclsList+xml")
         end
 
+        def pools
+          @pools ||= collection_based_on_type("application/vnd.tmrk.ecloud.computePoolsList+xml")
+        end
+
+=begin        def pools
+          @pools ||= Fog::Compute::Ecloud::Pools.
+            new( :connection => connection,
+                 :href => href + "/extensions/vdc/#{vdc_id}/computePools" )
+        end
+=end
+
+
         private
 
         def collection_based_on_type(type, klass = nil)
@@ -68,6 +80,8 @@ module Fog
               klass || Fog::Compute::Ecloud::InternetServices
             when "application/vnd.vmware.vcloud.catalog+xml"
               Fog::Compute::Ecloud::Catalog
+            when "application/vnd.tmrk.ecloud.computePoolsList+xml"
+              Fog::Compute::Ecloud::Pools
             when "application/vnd.tmrk.ecloud.firewallAclsList+xml"
               Fog::Compute::Ecloud::FirewallAcls
             end.new( :connection => connection, :href => link[:href] )

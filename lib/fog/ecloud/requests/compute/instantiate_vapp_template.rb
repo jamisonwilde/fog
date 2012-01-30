@@ -41,28 +41,36 @@ module Fog
 
         def generate_instantiate_vapp_template_request(options)
           xml = Builder::XmlMarkup.new
+          ovf = "http://schemas.dmtf.org/ovf/envelope/1"
+          cim = "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData"
+          vcloud = "http://www.vmware.com/vcloud/v0.8"
           xml.InstantiateVAppTemplateParams(xmlns.merge!(:name => options[:name], :"xml:lang" => "en")) {
             xml.VAppTemplate(:href => options[:template_uri])
             xml.InstantiationParams {
-              xml.ProductSection( :"xmlns:q1" => "http://www.vmware.com/vcloud/v0.8", :"xmlns:ovf" => "http://schemas.dmtf.org/ovf/envelope/1") {
+              xml.ProductSection( :"xmlns:q1" => vcloud, :"xmlns:ovf" => ovf) {
                 if options[:password]
-                  xml.Property( :xmlns => "http://schemas.dmtf.org/ovf/envelope/1", :"ovf:key" => "password", :"ovf:value" => options[:password] )
+                  xml.Property( :xmlns => ovf, :"ovf:key" => "password", :"ovf:value" => options[:password] )
                 end
-                xml.Property( :xmlns => "http://schemas.dmtf.org/ovf/envelope/1", :"ovf:key" => "row", :"ovf:value" => options[:row] )
-                xml.Property( :xmlns => "http://schemas.dmtf.org/ovf/envelope/1", :"ovf:key" => "group", :"ovf:value" => options[:group] )
+                xml.Property( :xmlns => ovf, :"ovf:key" => "row", :"ovf:value" => options[:row] )
+                xml.Property( :xmlns => ovf, :"ovf:key" => "group", :"ovf:value" => options[:group] )
+                [:ipaddress, :tags, :longName, :primaryDNS, :secondaryDNS, :computePool].each do |prop|
+                  if options[prop]
+                    xml.Property( :xmlns => ovf, :"ovf:key" => prop.to_s, :"ovf:value" => options[prop] )
+                  end
+                end
               }
-              xml.VirtualHardwareSection( :"xmlns:q1" => "http://www.vmware.com/vcloud/v0.8" ) {
+              xml.VirtualHardwareSection( :"xmlns:q1" => vcloud ) {
                 # # of CPUS
-                xml.Item( :xmlns => "http://schemas.dmtf.org/ovf/envelope/1" ) {
-                  xml.InstanceID(1, :xmlns => "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData")
-                  xml.ResourceType(3, :xmlns => "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData")
-                  xml.VirtualQuantity(options[:cpus], :xmlns => "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData")
+                xml.Item( :xmlns => ovf ) {
+                  xml.InstanceID(1, :xmlns => cim)
+                  xml.ResourceType(3, :xmlns => cim)
+                  xml.VirtualQuantity(options[:cpus], :xmlns => cim)
                 }
                 # Memory
-                xml.Item( :xmlns => "http://schemas.dmtf.org/ovf/envelope/1" ) {
-                  xml.InstanceID(2, :xmlns => "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData")
-                  xml.ResourceType(4, :xmlns => "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData")
-                  xml.VirtualQuantity(options[:memory], :xmlns => "http://schemas.dmtf.org/wbem/wscim/1/cim-schema/2/CIM_ResourceAllocationSettingData")
+                xml.Item( :xmlns => ovf ) {
+                  xml.InstanceID(2, :xmlns => cim)
+                  xml.ResourceType(4, :xmlns => cim)
+                  xml.VirtualQuantity(options[:memory], :xmlns => cim)
                 }
               }
               xml.NetworkConfigSection {

@@ -305,6 +305,10 @@ module Fog
         def firewall_acls
           @firewall_acls ||= MockFirewallAcls.new({}, self)
         end
+
+        def firewall_acls
+          @firewall_acls ||= MockPools.new({}, self)
+        end
       end
 
       class MockTaskList < Base
@@ -850,6 +854,8 @@ module Fog
       collection :tasks
       model :vdc
       collection :vdcs
+      model :pool
+      collection :pools
 
       request_path 'fog/ecloud/requests/compute'
       request :add_internet_service
@@ -866,6 +872,8 @@ module Fog
       request :delete_vapp
       request :get_catalog
       request :get_catalog_item
+      request :get_pool
+      request :get_pools
       request :get_customization_options
       request :get_firewall_acls
       request :get_firewall_acl
@@ -951,13 +959,13 @@ module Fog
         include Fog::Ecloud::MockDataClasses
 
         def self.base_url
-          "https://fakey.com/api/v0.8b-ext2.6"
+          "https://fakey.com/api/v0.8b-ext2.8"
         end
 
         def self.data( base_url = self.base_url )
           @mock_data ||= MockData.new.tap do |vcloud_mock_data|
             vcloud_mock_data.versions.clear
-            vcloud_mock_data.versions << MockVersion.new(:version => "v0.8b-ext2.6", :supported => true)
+            vcloud_mock_data.versions << MockVersion.new(:version => "v0.8b-ext2.8", :supported => true)
 
             vcloud_mock_data.organizations << MockOrganization.new(:name => "Boom Inc.").tap do |mock_organization|
               mock_organization.vdcs << MockVdc.new(:name => "Boomstick").tap do |mock_vdc|
@@ -1184,7 +1192,7 @@ module Fog
         end
 
         def supporting_versions
-          ["v0.8b-ext2.6", "0.8b-ext2.6"]
+          ["v0.8b-ext2.8", "0.8b-ext2.8"]
         end
 
         private
