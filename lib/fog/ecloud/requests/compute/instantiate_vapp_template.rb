@@ -48,13 +48,8 @@ module Fog
             xml.VAppTemplate(:href => options[:template_uri])
             xml.InstantiationParams {
               xml.ProductSection( :"xmlns:q1" => vcloud, :"xmlns:ovf" => ovf) {
-                if options[:password]
-                  xml.Property( :xmlns => ovf, :"ovf:key" => "password", :"ovf:value" => options[:password] )
-                end
-                xml.Property( :xmlns => ovf, :"ovf:key" => "row", :"ovf:value" => options[:row] )
-                xml.Property( :xmlns => ovf, :"ovf:key" => "group", :"ovf:value" => options[:group] )
-                [:ipaddress, :tags, :longName, :primaryDNS, :secondaryDNS, :computePool].each do |prop|
-                  if options[prop]
+                [:password, :row, :group, :ipaddress, :tags, :longName, :primaryDNS, :secondaryDNS, :computePool].each do |prop|
+                  if options[prop] and options[prop] != '' 
                     xml.Property( :xmlns => ovf, :"ovf:key" => prop.to_s, :"ovf:value" => options[prop] )
                   end
                 end
